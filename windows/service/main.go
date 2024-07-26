@@ -1,6 +1,8 @@
 package service
 
 import (
+	"time"
+
 	"golang.org/x/sys/windows/svc"
 )
 
@@ -30,24 +32,27 @@ func (ws *WinService) Execute(args []string, r <-chan svc.ChangeRequest, changes
 
 loop:
 	for {
-		c := <-r
-		switch c.Cmd {
-		case svc.Interrogate:
-			changes <- c.CurrentStatus
-			//time.Sleep(100 * time.Millisecond)
-		case svc.Stop, svc.Shutdown:
-			changes <- svc.Status{State: svc.StopPending}
-			if err := ws.Stop(); err != nil {
-				return true, 2
-			}
+		select {
+		case c := <-r:
+			switch c.Cmd {
+			case svc.Interrogate:
+				changes <- c.CurrentStatus
+			case svc.Stop, svc.Shutdown:
+				changes <- svc.Status{State: svc.StopPending}
+				if err := ws.Stop(); err != nil {
+					return true, 2
+				}
 
-			break loop
-			// case svc.Pause:
-			// 	changes <- svc.Status{State: svc.Paused, Accepts: cmdsAccepted}
-			// case svc.Continue:
-			// 	changes <- svc.Status{State: svc.Running, Accepts: cmdsAccepted}
+				break loop
+				// case svc.Pause:
+				// 	changes <- svc.Status{State: svc.Paused, Accepts: cmdsAccepted}
+				// case svc.Continue:
+				// 	changes <- svc.Status{State: svc.Running, Accepts: cmdsAccepted}
+			default:
+				continue loop
+			}
 		default:
-			continue loop
+			time.Sleep(200 * time.Millisecond)
 		}
 	}
 
