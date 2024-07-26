@@ -4,6 +4,8 @@ import (
 	"golang.org/x/sys/windows/svc"
 )
 
+var IsWindowsService = svc.IsWindowsService
+
 func RunService(name string, start, stop func() error) error {
 	if flag, _ := svc.IsWindowsService(); flag {
 		return svc.Run(name, &WinService{Start: start, Stop: stop})
