@@ -1,12 +1,8 @@
-package main
+package service
 
 import (
 	"golang.org/x/sys/windows/svc"
 )
-
-func main() {
-
-}
 
 func RunService(name string, start, stop func() error) error {
 	if flag, _ := svc.IsWindowsService(); flag {
